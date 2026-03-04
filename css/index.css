@@ -1,4 +1,58 @@
+/* Mobile first approach */
 body {
-    background: aqua;
     margin: 0;
+    overflow-x: hidden; /* Prevent horizontal scrollbars */
+    background: rgb(31, 137, 172);
+    font-family: Arial, sans-serif;
+}
+
+    
+h1 {
+    position: relative;
+    width: 690px; 
+    white-space: nowrap; /* Prevent text wrapping */
+    animation: slideAcross 14s linear infinite; /* Duration, timing, repeat */
+    
+}
+
+/* Keyframes for sliding animation */
+@keyframes slideAcross {
+    0% {
+        transform: translateX(100%); /* Start off-screen right */
+    }
+    100% {
+        transform: translateX(-100%); /* End off-screen left */
+    }
+}
+
+ul {
+    display: flex;
+    justify-content: space-evenly;
+    list-style-type: none;
+}
+
+nav li {
+    text-decoration: none;
+}
+
+h2 {
+    margin-left: .6em;
+}
+
+p {
+    margin: 0 1em;
+    background-color: rgba(255, 255, 255, 0.4); /* Semi-transparent background for better readability */
+    border-bottom: 2px solid #a5b9bd;
+    padding: .5em;
+    border-radius: 5px;
+    line-height: 1.6;
+}
+
+div {
+    margin: 1em;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-bottom: 2px solid #a5b9bd;
+    padding: .5em;
+    border-radius: 5px;
+    line-height: 1.6;
 }

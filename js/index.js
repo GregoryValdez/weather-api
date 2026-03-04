@@ -1,28 +1,103 @@
-const header = document.createElement('h1');
-header.textContent = 'Intro';
-document.body.append(header);
+// Adjust your code so clicking your navigation link for your second data point will change/update your fetch accordingly.
+const formatTime = (isoString) => {
+    return new Date(isoString).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+    });
+}
 
-async function getWeather() {
+const weatherConfiguration = {
+    0: ["☀️", "Clear Sky - No clouds are observed or observable."],
+    1: ["🌤️", "Mainly Clear - Clouds are generally dissolving, becoming less developed, or only a few clouds are present."],
+    2: ["⛅", "Partly Cloudy - The state of the sky is generally unchanged, with moderate cloud cover (scattered clouds)."],
+    3: ["☁️", "Overcast - The sky is covered or clouds are generally forming/developing."],
+    45: ["🌫️", "Fog (or Haze) - Visibility is reduced by smoke, dust, or haze."],
+    48: ["🌫️", "Fog (or Haze) - Visibility is reduced by smoke, dust, or haze."],
+}
+
+async function getCurrentWeather() {
     try {
-        let response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m,weather_code&timezone=America%2FLos_Angeles&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch');
+        let response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=38.0022&longitude=-121.3362&current=temperature_2m,weather_code,wind_speed_10m,precipitation&timezone=auto&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch');
         let data = await response.json();
-        console.log(data.current.time, data.current.temperature_2m, data.current.weather_code);
+        console.log(data.current.time, data.current.temperature_2m, data.current.wind_speed_10m, data.current.precipitation, data.current.weather_code);
         let weather = {
             time: data.current.time,
             temperature: data.current.temperature_2m,
+            wind: data.current.wind_speed_10m,
+            precipitation: data.current.precipitation,
             condition: data.current.weather_code
         }
+
+        const currentSection = document.getElementById('current');
         const weatherHeader = document.createElement('h2');
-        weatherHeader.textContent = 'Current Weather';
-        document.body.append(weatherHeader);
+        weatherHeader.textContent = 'Current Weather in Stockton, CA';
+        currentSection.appendChild(weatherHeader);
         const weatherInfo = document.createElement('p');
-        weatherInfo.innerHTML = `Date/Time: ${weather.time} <br> Temperature: ${weather.temperature}°F <br>
-        Condition Code: ${weather.condition} corresponds to sandstorm, duststorm, or blowing snow/drifting snow.`;
-        document.body.append(weatherInfo);
+        const time12h = formatTime(weather.time);
+        const [date] = weather.time.split('T');
+        const code = weather.condition;
+        const [emoji, text] = weatherConfiguration[code] || ['❓', 'Unknown Weather Condition'];
+
+        weatherInfo.innerHTML = `<strong>📅 Date/🕰️ PST:</strong> ${date} ${time12h}<br> <strong>🌡️ Temperature:</strong> ${weather.temperature}°F<br> <strong>🍃 Wind Speed:</strong> ${weather.wind} mph<br> <strong>🌧️ Precipitation:</strong> ${weather.precipitation} inches<br> <strong> Condition:</strong> ${emoji} ${text}`;
+
+        currentSection.appendChild(weatherInfo);
         return weather;
     } catch (error) {
-        console.error('Error fetching weather data:', error);
+        // console.error('Error fetching current weather:', error);
+        alert('Error fetching current weather. Please try again!');
     }
 }
+getCurrentWeather();
 
-getWeather();
+async function get7DayForecast() {
+    try {
+        let response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=38.0022&longitude=-121.3362&daily=weather_code,uv_index_max,sunrise,sunset,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_probability_max&timezone=auto&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch');
+        let data = await response.json();
+        console.log(data.daily.time, data.daily.weather_code, data.daily.uv_index_max, data.daily.sunrise, data.daily.sunset, data.daily.temperature_2m_max, data.daily.temperature_2m_min, data.daily.wind_speed_10m_max, data.daily.precipitation_probability_max);
+        let weather = {
+            day: data.daily.time,
+            condition: data.daily.weather_code,
+            uvIndex: data.daily.uv_index_max,
+            sunRise: data.daily.sunrise,
+            sunSet: data.daily.sunset,
+            temperature: data.daily.temperature_2m_max,
+            temperature1: data.daily.temperature_2m_min,
+            wind: data.daily.wind_speed_10m_max,
+            precipitation: data.daily.precipitation_probability_max
+        }
+
+        const forecastSection = document.getElementById('forecast');
+        forecastSection.innerHTML = ''; // Clear previous forecast data
+        const forecastHeader = document.createElement('h2');
+        forecastHeader.textContent = '7 Day Forecast for Stockton, CA';
+        forecastSection.appendChild(forecastHeader);
+
+        for (let i = 0; i < 7; i++) {
+            const dailyDiv = document.createElement('div');
+            dailyDiv.className = 'daily-forecast';
+            const code = weather.condition[i];
+            const [emoji, text] = weatherConfiguration[code] || ['❓', 'Unknown Weather Condition'];
+            const date = weather.day[i];
+            const sunrise = formatTime(weather.sunRise[i]);
+            const sunset = formatTime(weather.sunSet[i]);
+            const tempMax = weather.temperature[i];
+            const tempMin = weather.temperature1[i];
+            // let conditionCode = weather.condition[i];
+            const uv = weather.uvIndex[i];
+            const wind = weather.wind[i];
+            const precipitation = weather.precipitation[i];
+
+            dailyDiv.innerHTML = `
+            <div> <strong>📅 ${date}</strong><br> <strong>🌅 Sunrise:</strong> ${sunrise} | <strong>🌑 Sunset:</strong> ${sunset}<br> <strong>🌡️ High:</strong> ${tempMax}°F | <strong>Low:</strong> ${tempMin}°F<br> <strong>🌞 UV Index:</strong> ${uv}<br> <strong>🍃 Wind Speed:</strong> ${wind} mph<br> <strong>🌧️ Precipitation Probability:</strong> ${precipitation}%<br> <strong>Condition:</strong> ${emoji} ${text}</div> 
+            `;
+            forecastSection.appendChild(dailyDiv);
+        }
+
+        return weather;
+    } catch (error) {
+        console.error('Error fetching 7 day forecast:', error);
+        // alert('Error fetching 7 day forecast. Please try again!');
+    }
+}
+get7DayForecast();
