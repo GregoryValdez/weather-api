@@ -1,27 +1,27 @@
 /* Mobile first approach */
 body {
     margin: 0;
-    overflow-x: hidden; /* Prevent horizontal scrollbars */
+    overflow-x: hidden; 
     background: rgb(31, 137, 172);
     font-family: Arial, sans-serif;
 }
     
 h1 {
     color: #C5C5C5;
-    position: relative; /* Keeps the element in the normal document flow, but allows you to shift it without affecting surrounding elements */
+    position: relative; 
     width: 690px;
-    white-space: nowrap; /* Prevent text wrapping */
-    animation: slideAcross 12s linear infinite; /* Duration, timing, repeat */
+    white-space: nowrap; 
+    animation: slideAcross 12s linear infinite; 
     
 }
 
 /* Keyframes for sliding animation */
 @keyframes slideAcross {
     0% {
-        transform: translateX(100%); /* Start off-screen right */
+        transform: translateX(100%); 
     }
     100% {
-        transform: translateX(-100%); /* End off-screen left */
+        transform: translateX(-100%); 
     }
 }
 
@@ -32,7 +32,7 @@ ul {
     gap: 1em;
     text-align: center;
     list-style-type: none;
-    background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background for better readability */
+    background-color: rgba(255, 255, 255, 0.2); 
     border-bottom: 2px solid #AAA9A9;
     padding: .5em;
 }
@@ -71,7 +71,7 @@ p {
     background-color: rgba(255, 255, 255, 0.4);
     padding: .5em;
     border-radius: 5px;
-    line-height: 1.6; /* Each horizontal line measurement */
+    line-height: 1.6; 
     box-shadow:#272635 0px 4px 8px -2px;
 }
 
