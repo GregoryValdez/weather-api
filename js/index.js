@@ -2,7 +2,7 @@ const formatTime = (isoString) => {
     return new Date(isoString).toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: 'numeric',
-        hour12: true // Use 12-hour format with AM/PM
+        hour12: true 
     });
 }
 
@@ -41,15 +41,15 @@ async function getCurrentWeather() {
         }
 
         const currentSection = document.getElementById('current');
-        currentSection.innerHTML = ''; // Clear previous weather data from the past API call
+        currentSection.innerHTML = ''; 
         const weatherHeader = document.createElement('h2');
         weatherHeader.textContent = 'Current Weather';
         currentSection.appendChild(weatherHeader);
         const weatherInfo = document.createElement('p');
         const time12h = formatTime(weather.time);
-        const [date] = weather.time.split('T'); // Destructuring to get just the date part of the ISO 8601 date string (international standard date format)
+        const [date] = weather.time.split('T'); 
         const code = weather.condition;
-        const [emoji, text] = weatherConfiguration[code] || ['❓', 'Unknown Weather Condition']; // Destructuring to get the emoji and text from the weatherConfiguration object based on the weather condition code, with a fallback for unknown codes
+        const [emoji, text] = weatherConfiguration[code] || ['❓', 'Unknown Weather Condition']; 
 
         weatherInfo.innerHTML = `<strong>📅 Date/🕰️ PDT:</strong> ${date} ${time12h}<br> <strong>🌡️ Temperature:</strong> ${weather.temperature}°F<br> <strong>🍃 Wind Speed:</strong> ${weather.wind} mph<br> <strong>🌧️ Precipitation:</strong> ${weather.precipitation} inches<br> <strong> Condition:</strong> ${emoji} ${text}`;
 
@@ -60,7 +60,6 @@ async function getCurrentWeather() {
         alert('Error fetching current weather. Please try again!');
     }
 }
-// getCurrentWeather();
 
 async function get7DayForecast() {
     try {
@@ -80,22 +79,21 @@ async function get7DayForecast() {
         }
 
         const forecastSection = document.getElementById('forecast');
-        forecastSection.innerHTML = ''; // Clear previous forecast data
+        forecastSection.innerHTML = ''; 
         const forecastHeader = document.createElement('h2');
         forecastHeader.textContent = '7 Day Forecast';
         forecastSection.appendChild(forecastHeader);
 
-        for (let i = 0; i < 7; i++) { // Iterate through each key-value pairs arrays in the weather object to create a daily forecast CARD for each day in the 7 day forecast 
+        for (let i = 0; i < 7; i++) { 
             const dailyDiv = document.createElement('div');
             dailyDiv.className = 'daily-forecast';
-            const code = weather.condition[i]; // Starting at index 0 and looping through
+            const code = weather.condition[i]; 
             const [emoji, text] = weatherConfiguration[code] || ['❓', 'Unknown Weather Condition'];
             const date = weather.day[i];
             const sunrise = formatTime(weather.sunRise[i]);
             const sunset = formatTime(weather.sunSet[i]);
             const tempMax = weather.temperature[i];
             const tempMin = weather.temperature1[i];
-            // let conditionCode = weather.condition[i];
             const uv = weather.uvIndex[i];
             const wind = weather.wind[i];
             const precipitation = weather.precipitation[i];
@@ -112,7 +110,6 @@ async function get7DayForecast() {
         alert('Error fetching 7 day forecast. Please try again!');
     }
 }
-// get7DayForecast();
 
 const currentLink = document.querySelector('.current');
 const currentSection = document.getElementById('current');
