@@ -27,9 +27,31 @@ img.style.width = '100%';
 img.style.height = 'auto';
 firstDisplay.appendChild(img);
 
-async function getCurrentWeather() {
+// Geocoding function 
+async function getCoordinates(city) {
     try {
-        let response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=38.0022&longitude=-121.3362&current=temperature_2m,weather_code,wind_speed_10m,precipitation&timezone=auto&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch');
+        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
+        const data = await response.json();
+        
+        if (!data.results || data.results.length === 0) {
+            alert("City not found. Please try again!");
+            return null;
+        }
+        
+        return {
+            lat: data.results[0].latitude,
+            lon: data.results[0].longitude,
+            name: data.results[0].name,
+            admin: data.results[0].admin1 
+        };
+    } catch (error) {
+        alert("Error finding location.");
+    }
+}
+
+async function getCurrentWeather(lat, lon) {
+    try {
+        let response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,precipitation&timezone=auto&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch`);
         let data = await response.json();
         console.log(data.current.time, data.current.temperature_2m, data.current.wind_speed_10m, data.current.precipitation, data.current.weather_code);
         let weather = {
@@ -51,7 +73,7 @@ async function getCurrentWeather() {
         const code = weather.condition;
         const [emoji, text] = weatherConfiguration[code] || ['❓', 'Unknown Weather Condition']; 
 
-        weatherInfo.innerHTML = `<strong>📅 Date/🕰️ PDT:</strong> ${date} ${time12h}<br> <strong>🌡️ Temperature:</strong> ${weather.temperature}°F<br> <strong>🍃 Wind Speed:</strong> ${weather.wind} mph<br> <strong>🌧️ Precipitation:</strong> ${weather.precipitation} inches<br> <strong> Condition:</strong> ${emoji} ${text}`;
+        weatherInfo.innerHTML = `<strong>📅 Date/🕰️ Time:</strong> ${date} ${time12h}<br> <strong>🌡️ Temperature:</strong> ${weather.temperature}°F<br> <strong>🍃 Wind Speed:</strong> ${weather.wind} mph<br> <strong>🌧️ Precipitation:</strong> ${weather.precipitation} inches<br> <strong> Condition:</strong> ${emoji} ${text}`;
 
         currentSection.appendChild(weatherInfo);
         return weather;
@@ -61,9 +83,9 @@ async function getCurrentWeather() {
     }
 }
 
-async function get7DayForecast() {
+async function get7DayForecast(lat, lon) {
     try {
-        let response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=38.0022&longitude=-121.3362&daily=weather_code,uv_index_max,sunrise,sunset,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_probability_max&timezone=auto&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch');
+        let response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,uv_index_max,sunrise,sunset,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_probability_max&timezone=auto&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch`);
         let data = await response.json();
         console.log(data.daily.time, data.daily.weather_code, data.daily.uv_index_max, data.daily.sunrise, data.daily.sunset, data.daily.temperature_2m_max, data.daily.temperature_2m_min, data.daily.wind_speed_10m_max, data.daily.precipitation_probability_max);
         let weather = {
@@ -111,6 +133,38 @@ async function get7DayForecast() {
     }
 }
 
+const searchButton = document.getElementById('search');
+const cityInput = document.getElementById('city');
+
+searchButton.addEventListener('click', async () => {
+    const city = cityInput.value;
+    if (!city) {
+        alert("Please enter a city name.");
+        return;
+    }
+
+    const coordinates = await getCoordinates(city);
+    if (coordinates) {
+        getCurrentWeather(coordinates.lat, coordinates.lon);
+        get7DayForecast(coordinates.lat, coordinates.lon);
+    }
+});
+
+let currentCoords = { lat: 38.0022, lon: -121.3362 }; 
+
+document.getElementById('search').addEventListener('click', async () => {
+    const city = document.getElementById('city').value;
+    const coords = await getCoordinates(city);
+    
+    if (coords) {
+        currentCoords = { lat: coords.lat, lon: coords.lon };
+        firstDisplay.style.display = 'none';
+        forecastSection.style.display = 'none';
+        currentSection.style.display = 'block';
+        getCurrentWeather(currentCoords.lat, currentCoords.lon);
+    }
+});
+
 const currentLink = document.querySelector('.current');
 const currentSection = document.getElementById('current');
 const forecastLink = document.querySelector('.forecast');
@@ -120,12 +174,12 @@ currentLink.addEventListener('click', () => {
     firstDisplay.style.display = 'none';
     forecastSection.style.display = 'none';
     currentSection.style.display = 'block';
-    getCurrentWeather();
+    getCurrentWeather(currentCoords.lat, currentCoords.lon);
 });
 
 forecastLink.addEventListener('click', () => {
     firstDisplay.style.display = 'none';
     currentSection.style.display = 'none';
     forecastSection.style.display = 'block';
-    get7DayForecast();
+    get7DayForecast(currentCoords.lat, currentCoords.lon);
 });
