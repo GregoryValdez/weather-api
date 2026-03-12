@@ -47,6 +47,13 @@ a:hover, a:focus {
     text-decoration: underline;
 }
 
+.locations {
+    display: flex;
+    justify-content: center;
+    gap: 1em;
+    margin: 1em auto;
+}
+
 #current {
     display: none;
 }
